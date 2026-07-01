@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Pet Buddy — сервис поиска нянь для животных</title>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Шрифты -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- ===== ХЕДЕР ===== -->
+    <header class="header">
+        <div class="logo">
+            <svg class="logo-icon" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="19" stroke="#4a7c59" stroke-width="2"/>
+                <path d="M13 17C13 14.2386 15.2386 12 18 12H22C24.7614 12 27 14.2386 27 17V23C27 25.7614 24.7614 28 22 28H18C15.2386 28 13 25.7614 13 23V17Z" fill="#4a7c59" opacity="0.2"/>
+                <path d="M16 19L18 21L22 17" stroke="#4a7c59" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="16.5" cy="16.5" r="1.5" fill="#4a7c59"/>
+                <circle cx="23.5" cy="16.5" r="1.5" fill="#4a7c59"/>
+                <path d="M18 23C18 23 19 24.5 20 24.5C21 24.5 22 23 22 23" stroke="#4a7c59" stroke-width="2" stroke-linecap="round"/>
+                <path d="M14 28L16 31L20 29L24 31L26 28" stroke="#e8a87c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="logo-text">
+                Pet Buddy
+                <small>забота о питомцах</small>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="#" class="active" data-page="home">Главная</a>
+            <a href="#" data-page="search" id="navSearch">Поиск</a>
+            <a href="#" data-page="profile" id="navProfile">Профиль</a>
+            <a href="#" data-page="orders" id="navOrders">Мои заказы</a>
+            <a href="#" data-page="admin" id="navAdmin" style="display:none;">Админ</a>
+            <div class="auth-buttons" id="authButtons">
+                <button class="btn-outline" id="loginBtn">Вход</button>
+                <button class="btn-primary" id="registerBtn">Регистрация</button>
+            </div>
+            <div class="user-avatar" id="userAvatar" style="display:none;" title="Личный кабинет">А</div>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <!-- ===== HERO ===== -->
+        <section class="hero" id="heroSection">
+            <div class="hero-text">
+                <h2>Забота, когда <span>вы далеко</span></h2>
+                <p>Найдите проверенную зооняню для выгула, передержки или ухода. Рядом с вами.</p>
+                <div class="hero-search">
+                    <input type="text" id="heroSearchInput" placeholder="Поиск по имени или услуге..." />
+                    <button id="heroSearchBtn">Найти</button>
+                </div>
+            </div>
+            <div class="hero-img">
+                <img src="img/pess.png" 
+                     alt="Собака и кошка" 
+                     style="width:100%; max-width:500px; height:auto; display:block;" />
+            </div>
+        </section>
+
+        <!-- ===== БЫСТРЫЕ КАТЕГОРИИ ===== -->
+        <div class="categories" id="quickCategories">
+            <div class="cat-item active" data-filter="all">Все</div>
+            <div class="cat-item" data-filter="собаки">Собаки</div>
+            <div class="cat-item" data-filter="кошки">Кошки</div>
+            <div class="cat-item" data-filter="грызуны">Грызуны</div>
+            <div class="cat-item" data-filter="птицы">Птицы</div>
+            <div class="cat-item" data-filter="выгул">Выгул</div>
+            <div class="cat-item" data-filter="передержка">Передержка</div>
+            <div class="cat-item" data-filter="уход">Уход</div>
+        </div>
+
+        <!-- ===== ДАШБОРД ===== -->
+        <div class="dashboard" id="searchSection">
+            <!-- Фильтры -->
+            <aside class="filters-sidebar">
+                <h3>Фильтры</h3>
+                <div class="filter-group">
+                    <label>Тип животного</label>
+                    <select id="filterAnimal">
+                        <option value="all">Все</option>
+                        <option value="собаки">Собаки</option>
+                        <option value="кошки">Кошки</option>
+                        <option value="грызуны">Грызуны</option>
+                        <option value="птицы">Птицы</option>
+                        <option value="рептилии">Рептилии</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Услуга</label>
+                    <select id="filterService">
+                        <option value="all">Все услуги</option>
+                        <option value="выгул">Выгул</option>
+                        <option value="передержка">Передержка</option>
+                        <option value="уход">Уход за больным</option>
+                        <option value="кормление">Кормление</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Цена (руб/сутки)</label>
+                    <input type="range" id="priceRange" min="0" max="3000" step="100" value="3000" />
+                    <div class="range-labels">
+                        <span>0 руб</span>
+                        <span id="priceDisplay">до 3000 руб</span>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Рейтинг</label>
+                    <select id="filterRating">
+                        <option value="0">Любой</option>
+                        <option value="3">3+</option>
+                        <option value="4">4+</option>
+                        <option value="4.5">4.5+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Город / район</label>
+                    <input type="text" id="filterLocation" placeholder="Например: Москва, Центр" />
+                </div>
+                <button class="btn-apply" id="applyFiltersBtn">Применить фильтры</button>
+            </aside>
+
+            <!-- Карта + список -->
+            <div class="map-section">
+                <div class="map-card">
+                    <div class="map-toolbar">
+                        <button id="getLocationBtn" class="primary">Моя геолокация</button>
+                        <button id="resetMapBtn">Сброс карты</button>
+                        <span style="margin-left:auto; font-size:0.8rem; color:var(--text-light);" id="nannyCountDisplay">Найдено: 0</span>
+                    </div>
+                    <div id="map"></div>
+                </div>
+                <div class="nannies-list">
+                    <h3>Доступные зооняни <span id="nannyCount">0</span></h3>
+                    <div id="nanniesListContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ПОДВАЛ ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>Контакты</h4>
+                    <p><a href="mailto:info@petbuddy.ru">info@petbuddy.ru</a></p>
+                    <p><a href="tel:+74951234567">+7 (495) 123-45-67</a></p>
+                    <p>Москва, ул. Зоологическая, 5</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Организаторы</h4>
+                    <p><strong>ООО «Pet Buddy»</strong><br />ИНН 7701234567, ОГРН 1234567890123</p>
+                    <p>С 2018 года заботимся о питомцах.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>О сервисе</h4>
+                    <p>Платформа для поиска нянь, выгульщиков и передержки. Все исполнители верифицированы.</p>
+                    <p style="margin-top:6px;">Мы любим животных так же, как и вы.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Pet Buddy. Все права защищены. Демонстрационная версия.</div>
+        </div>
+    </footer>
+
+    <!-- ===== МОДАЛЬНОЕ ОКНО (регистрация/вход/профиль/админ) ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 id="modalTitle">Вход</h2>
+                <button class="close-modal" id="closeModalBtn">✕</button>
+            </div>
+            <div id="modalBody">
+                <!-- Контент подгружается через JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключаем JS -->
+    <script src="script.js"></script>
+</body>
+</html>
